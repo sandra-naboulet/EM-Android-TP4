@@ -64,19 +64,21 @@ public class LoginActivity extends Activity implements OnClickListener {
 		super.onStop();
 	}
 
+	@Override
+	protected void onResume() {
+		mProgressBar.setVisibility(View.GONE);
+		mLoginButton.setVisibility(View.VISIBLE);
+		super.onResume();
+	}
+
 	private void initWithUserPrefs() {
 
 		SharedPreferences userCurrentLogin = getSharedPreferences(PREF_ACTIVE_USER, 0);
 		if (userCurrentLogin != null) {
 			mEmailPrefs = userCurrentLogin.getString("email", null);
 			if (mEmailPrefs != null && !mEmailPrefs.isEmpty()) {
-				SharedPreferences userDatas = getSharedPreferences(mEmailPrefs, 0);
-				String user = userDatas.getString("name", "");
-				mPasswordPrefs = userDatas.getString("password", "");
-				if (user != null && !user.isEmpty()) {
-					mEmailEditText.setText(mEmailPrefs);
-					return;
-				}
+				mEmailEditText.setText(mEmailPrefs);
+				return;
 			}
 		}
 		mEmailEditText.setText("");
@@ -117,8 +119,7 @@ public class LoginActivity extends Activity implements OnClickListener {
 							AppHelper.saveInSharedPreferences(LoginActivity.this, user.getEmail(), token);
 
 							Toast.makeText(LoginActivity.this, "Vous etes connecté", Toast.LENGTH_LONG).show();
-							mProgressBar.setVisibility(View.GONE);
-							mLoginButton.setVisibility(View.VISIBLE);
+
 							Intent intent = new Intent(LoginActivity.this, MainActivity.class);
 							startActivity(intent);
 

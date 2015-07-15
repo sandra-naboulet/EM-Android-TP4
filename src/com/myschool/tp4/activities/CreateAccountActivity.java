@@ -56,6 +56,13 @@ public class CreateAccountActivity extends Activity implements OnClickListener {
 	}
 
 	@Override
+	protected void onResume() {
+		mProgressBar.setVisibility(View.GONE);
+		mCreateAccountButton.setVisibility(View.VISIBLE);
+		super.onResume();
+	}
+
+	@Override
 	protected void onStop() {
 		// TODO Auto-generated method stub
 		super.onStop();
@@ -107,8 +114,7 @@ public class CreateAccountActivity extends Activity implements OnClickListener {
 							AppHelper.saveInSharedPreferences(CreateAccountActivity.this, user.getEmail(), token);
 
 							Toast.makeText(CreateAccountActivity.this, "Vous etes connecté", Toast.LENGTH_LONG).show();
-							mProgressBar.setVisibility(View.GONE);
-							mCreateAccountButton.setVisibility(View.VISIBLE);
+
 							Intent intent = new Intent(CreateAccountActivity.this, MainActivity.class);
 							startActivity(intent);
 

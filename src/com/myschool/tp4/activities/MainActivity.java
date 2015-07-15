@@ -1,34 +1,54 @@
 package com.myschool.tp4.activities;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.Request.Method;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.myschool.tp4.R;
 import com.myschool.tp4.VolleyApp;
+import com.myschool.tp4.adapters.GroupAdapter;
+import com.myschool.tp4.models.Group;
+import com.myschool.tp4.volley.CustomJsonArrayRequest;
 import com.myschool.tp4.volley.CustomJsonObjectRequest;
 
 public class MainActivity extends ActionBarActivity {
 
 	TextView mWelcomeTextView = null;
 	ProgressBar mProgressBar = null;
+	ListView mGroupsListView = null;
 
 	String mUserName = null;
 	String mUserEmail = null;
 	String mUserToken = null;
+
+	// ArrayAdapter<String> mGroupsAdapter;
+	GroupAdapter mAdapter;
+	List<Group> mGroups = new ArrayList<Group>();
+
+	boolean isGettingUserInfos = false;
+	boolean isGettingGroups = false;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -36,11 +56,22 @@ public class MainActivity extends ActionBarActivity {
 		setContentView(R.layout.activity_main);
 		mWelcomeTextView = (TextView) findViewById(R.id.welcome);
 		mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
+		mGroupsListView = (ListView) findViewById(R.id.groups_list);
+		mGroupsListView.setOnItemClickListener(new OnItemClickListener() {
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+				Toast.makeText(getApplicationContext(), "Click ListItem Number " + position, Toast.LENGTH_LONG).show();
+			}
+		});
+
 	}
 
 	@Override
 	protected void onStart() {
+		mProgressBar.setVisibility(View.VISIBLE);
+		mWelcomeTextView.setVisibility(View.GONE);
 		startGetUserInfos();
+		startGetGroups();
 		super.onStart();
 	}
 
@@ -80,6 +111,9 @@ public class MainActivity extends ActionBarActivity {
 					});
 			alertDialog.show();
 
+		} else if (id == R.id.action_add_group) {
+			Intent intent = new Intent(MainActivity.this, AddGroupActivity.class);
+			startActivity(intent);
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -90,12 +124,15 @@ public class MainActivity extends ActionBarActivity {
 	}
 
 	private void startGetUserInfos() {
-
+		isGettingGroups = true;
 		CustomJsonObjectRequest req = new CustomJsonObjectRequest(this, Method.GET, VolleyApp.URL_ME, null,
 				new Response.Listener<JSONObject>() {
+
 					@Override
 					public void onResponse(JSONObject response) {
 						Log.i("VOLLEY", "Receive response " + response.toString());
+						isGettingUserInfos = false;
+
 						try {
 
 							mUserName = response.getString("name");
@@ -112,6 +149,44 @@ public class MainActivity extends ActionBarActivity {
 					@Override
 					public void onErrorResponse(VolleyError error) {
 						Log.i("VOLLEY", "Error getting user infos");
+						isGettingUserInfos = false;
+					}
+
+				});
+
+		VolleyApp.getInstance().addToRequestQueue(req);
+
+	}
+
+	private void startGetGroups() {
+		isGettingGroups = true;
+		CustomJsonArrayRequest req = new CustomJsonArrayRequest(this, VolleyApp.URL_GROUPS,
+				new Response.Listener<JSONArray>() {
+					@Override
+					public void onResponse(JSONArray response) {
+						Log.i("VOLLEY", "Receive response " + response.toString());
+						isGettingGroups = false;
+						try {
+							mGroups.clear();
+							for (int i = 0; i < response.length(); i++) {
+								Group g = Group.parseFromJson(response.getJSONObject(i));
+								mGroups.add(g);
+								mAdapter = new GroupAdapter(MainActivity.this, mGroups);
+								mGroupsListView.setAdapter(mAdapter);
+							}
+
+							updateDisplay();
+						} catch (JSONException e) {
+
+						}
+
+					}
+
+				}, new Response.ErrorListener() {
+					@Override
+					public void onErrorResponse(VolleyError error) {
+						Log.i("VOLLEY", "Error getting user infos");
+						isGettingGroups = false;
 					}
 
 				});
@@ -121,10 +196,12 @@ public class MainActivity extends ActionBarActivity {
 	}
 
 	private void updateDisplay() {
-		String welcomeMsg = getResources().getString(R.string.welcome).replace("%s", mUserName);
-		mWelcomeTextView.setText(welcomeMsg);
-		mProgressBar.setVisibility(View.GONE);
-		mWelcomeTextView.setVisibility(View.VISIBLE);
+		if (!isGettingGroups && !isGettingUserInfos) {
+			String welcomeMsg = getResources().getString(R.string.welcome).replace("%s", mUserName);
+			mWelcomeTextView.setText(welcomeMsg);
+			mProgressBar.setVisibility(View.GONE);
+			mWelcomeTextView.setVisibility(View.VISIBLE);
+		}
 	}
 
 }

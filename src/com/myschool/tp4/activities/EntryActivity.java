@@ -5,9 +5,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
-public class EntryActivity extends Activity {
+import com.myschool.tp4.VolleyApp;
 
-	private final static String PREF_ACTIVE_USER = "ACTIVE_USER";
+public class EntryActivity extends Activity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -24,16 +24,12 @@ public class EntryActivity extends Activity {
 
 	private void checkSharedPreferences() {
 
-		SharedPreferences userCurrentLogin = getSharedPreferences(PREF_ACTIVE_USER, 0);
+		SharedPreferences userCurrentLogin = getSharedPreferences(VolleyApp.PREF_ACTIVE_USER, 0);
 		if (userCurrentLogin != null) {
 			String email = userCurrentLogin.getString("email", null);
 			if (email != null && !email.isEmpty()) {
-				SharedPreferences userDatas = getSharedPreferences(email, 0);
-				String user = userDatas.getString("name", null);
-				if (user != null && !user.isEmpty()) {
-					goToLoginActivity(email);
-					return;
-				}
+				goToLoginActivity(email);
+				return;
 			}
 		}
 
