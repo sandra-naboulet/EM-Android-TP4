@@ -1,4 +1,4 @@
-package com.myschool.tp3.activities;
+package com.myschool.tp4.activities;
 
 import android.app.Activity;
 import android.content.Intent;

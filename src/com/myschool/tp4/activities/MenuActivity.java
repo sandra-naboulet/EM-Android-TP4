@@ -1,8 +1,4 @@
-package com.myschool.tp3.activities;
-
-import com.myschool.tp3.R;
-import com.myschool.tp3.R.id;
-import com.myschool.tp3.R.layout;
+package com.myschool.tp4.activities;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -10,6 +6,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+
+import com.myschool.tp4.R;
 
 public class MenuActivity extends Activity implements OnClickListener {
 

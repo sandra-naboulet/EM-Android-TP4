@@ -1,4 +1,4 @@
-package com.myschool.tp3;
+package com.myschool.tp4;
 
 import android.app.Application;
 import android.text.TextUtils;
@@ -11,6 +11,8 @@ public class VolleyApp extends Application {
 
 	public static final String TAG = VolleyApp.class.getSimpleName();
 	private static VolleyApp sInstance = null;
+	
+	public final static String PREF_ACTIVE_USER = "ACTIVE_USER";
 	
 	private static final String URL_BASE = "http://questioncode.fr:10007";
 	public static final String URL_LOGIN = URL_BASE + "/auth/local";

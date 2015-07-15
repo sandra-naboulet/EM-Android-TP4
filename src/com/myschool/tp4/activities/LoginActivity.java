@@ -1,4 +1,4 @@
-package com.myschool.tp3.activities;
+package com.myschool.tp4.activities;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -20,10 +20,10 @@ import com.android.volley.Request.Method;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.myschool.tp3.R;
-import com.myschool.tp3.VolleyApp;
-import com.myschool.tp3.VolleyHelper;
-import com.myschool.tp3.models.User;
+import com.myschool.tp4.AppHelper;
+import com.myschool.tp4.R;
+import com.myschool.tp4.VolleyApp;
+import com.myschool.tp4.models.User;
 
 public class LoginActivity extends Activity implements OnClickListener {
 
@@ -101,27 +101,9 @@ public class LoginActivity extends Activity implements OnClickListener {
 		return false;
 	}
 
-	private void saveInSharedPreferences(String token) {
-		String userEmail = mEmailEditText.getText().toString().trim();
-
-		// Save ids
-		SharedPreferences userSettings = getSharedPreferences(userEmail, 0);
-		SharedPreferences.Editor editor = userSettings.edit();
-		editor.putString("token", token);
-		editor.putString("email", userEmail);
-
-		SharedPreferences userLoginPrefs = getSharedPreferences(PREF_ACTIVE_USER, 0);
-		SharedPreferences.Editor editor2 = userLoginPrefs.edit();
-		editor2.putString("email", userEmail);
-
-		editor.commit();
-		editor2.commit();
-
-	}
-
 	private void login() {
 
-		User user = new User();
+		final User user = new User();
 		user.setEmail(mEmailEditText.getText().toString().trim());
 		user.setPassword(mPasswordEditText.getText().toString().trim());
 
@@ -132,7 +114,8 @@ public class LoginActivity extends Activity implements OnClickListener {
 						Log.i("VOLLEY", "Receive response " + response.toString());
 						try {
 							String token = response.getString("token");
-							saveInSharedPreferences(token);
+							AppHelper.saveInSharedPreferences(LoginActivity.this, user.getEmail(), token);
+
 							Toast.makeText(LoginActivity.this, "Vous etes connecté", Toast.LENGTH_LONG).show();
 							mProgressBar.setVisibility(View.GONE);
 							mLoginButton.setVisibility(View.VISIBLE);
@@ -166,7 +149,7 @@ public class LoginActivity extends Activity implements OnClickListener {
 		NetworkResponse networkResponse = error.networkResponse;
 
 		if (networkResponse != null) {
-			errorStr = VolleyHelper.getMessageForStatusCode(this, networkResponse.statusCode);
+			errorStr = AppHelper.getMessageForStatusCode(this, networkResponse.statusCode);
 		} else {
 			errorStr = getResources().getString(R.string.error_no_internet);
 		}

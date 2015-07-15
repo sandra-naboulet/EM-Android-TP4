@@ -1,4 +1,4 @@
-package com.myschool.tp3.activities;
+package com.myschool.tp4.activities;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -19,14 +19,12 @@ import com.android.volley.Request.Method;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.myschool.tp3.R;
-import com.myschool.tp3.VolleyApp;
-import com.myschool.tp3.VolleyHelper;
-import com.myschool.tp3.models.User;
+import com.myschool.tp4.AppHelper;
+import com.myschool.tp4.R;
+import com.myschool.tp4.VolleyApp;
+import com.myschool.tp4.models.User;
 
 public class CreateAccountActivity extends Activity implements OnClickListener {
-
-	private final static String PREF_ACTIVE_USER = "ACTIVE_USER";
 
 	Button mCreateAccountButton = null;
 	EditText mNameEditText = null;
@@ -82,24 +80,6 @@ public class CreateAccountActivity extends Activity implements OnClickListener {
 		return false;
 	}
 
-	private void saveInSharedPreferences(String token) {
-		String userEmail = mEmailEditText.getText().toString().trim();
-
-		// Save ids
-		SharedPreferences userSettings = getSharedPreferences(userEmail, 0);
-		SharedPreferences.Editor editor = userSettings.edit();
-		editor.putString("name", mNameEditText.getText().toString().trim());
-		editor.putString("token", token);
-
-		SharedPreferences userLoginPrefs = getSharedPreferences(PREF_ACTIVE_USER, 0);
-		SharedPreferences.Editor editor2 = userLoginPrefs.edit();
-		editor2.putString("email", userEmail);
-
-		editor.commit();
-		editor2.commit();
-
-	}
-
 	@Override
 	public void onClick(View v) {
 		if (v.getId() == R.id.create_button) {
@@ -112,19 +92,20 @@ public class CreateAccountActivity extends Activity implements OnClickListener {
 	}
 
 	private void executeRequest() {
-		User user = new User();
+		final User user = new User();
 		user.setName(mNameEditText.getText().toString().trim());
 		user.setEmail(mEmailEditText.getText().toString().trim());
 		user.setPassword(mPasswordEditText.getText().toString().trim());
 
-		JsonObjectRequest req = new JsonObjectRequest(Method.POST, VolleyApp.URL_USERS,
-				user.toCreateAccountJSON(), new Response.Listener<JSONObject>() {
+		JsonObjectRequest req = new JsonObjectRequest(Method.POST, VolleyApp.URL_USERS, user.toCreateAccountJSON(),
+				new Response.Listener<JSONObject>() {
 					@Override
 					public void onResponse(JSONObject response) {
 
 						try {
 							String token = response.getString("token");
-							saveInSharedPreferences(token);
+							AppHelper.saveInSharedPreferences(CreateAccountActivity.this, user.getEmail(), token);
+
 							Toast.makeText(CreateAccountActivity.this, "Vous etes connecté", Toast.LENGTH_LONG).show();
 							mProgressBar.setVisibility(View.GONE);
 							mCreateAccountButton.setVisibility(View.VISIBLE);
@@ -159,7 +140,7 @@ public class CreateAccountActivity extends Activity implements OnClickListener {
 		NetworkResponse networkResponse = error.networkResponse;
 
 		if (networkResponse != null) {
-			errorStr = VolleyHelper.getMessageForStatusCode(this, networkResponse.statusCode);
+			errorStr = AppHelper.getMessageForStatusCode(this, networkResponse.statusCode);
 		} else {
 			errorStr = getResources().getString(R.string.error_no_internet);
 		}
